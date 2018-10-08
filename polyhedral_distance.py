@@ -135,12 +135,10 @@ def find_intersection(ordered_points, P):
 def calculate_distance(ordered_points, P, Q):
     # Calculate the point Q - P
     R = q_minus_p(Q, P)
-    print("Q - P = ", R)
     
     # Find the intersection of the polygon and a line
     # drawn from the origin to R
     V = find_intersection(ordered_points, R)
-    print("R will intersect between points : ", V)
     
     # Divide the polar radius of R by the polar radius
     # of V to get the distance in this metric
@@ -148,11 +146,9 @@ def calculate_distance(ordered_points, P, Q):
     R_radius = cartesian_to_polar(R)[0]
     
     if V[0] == V[1]:
-        print("V[0] == V[1]")
         V_radius = V[0][0]
         return R_radius / V_radius
     else:
-        print("V[0] != V[1]")
         p1 = polar_to_cartesian(V[0])
         p2 = polar_to_cartesian(V[1])
         
@@ -229,7 +225,6 @@ def main():
     
         distance = calculate_distance(ordered_points, P, Q)
         print("Distance between P : ", P[0], " ", P[1], " and Q : ", Q[0], Q[1], " is : ", distance)
-        print("Drawing plot to represent this calculation :")
         plot_distance_calculation(ordered_points, P, Q, distance)
 
 if __name__ == '__main__':
