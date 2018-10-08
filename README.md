@@ -14,7 +14,11 @@ Given a Polyhedral Finsler Metric, write a Python script which can calculate the
 * Draw a simulation to demonstrate translation/ scaling 
 
 ![Octagon](https://raw.githubusercontent.com/MelGeorge/PolyhedralFinslerMetrics/master/images/octagon.png)
+
+Given the Polyhedral Finsler Metric defined by a 'unit octagon', the distance between (10, 10) and (5, 4) is defined as follows:
 ![OctagonMetric](https://raw.githubusercontent.com/MelGeorge/PolyhedralFinslerMetrics/master/images/octagonMetric.png)
+
+Given the Polyhedral Finsler Metric defined by a unit square, the distance between (10, 10) and (5, 5) is defined as follows:
 ![SquareMetric](https://raw.githubusercontent.com/MelGeorge/PolyhedralFinslerMetrics/master/images/squareMetric.png)
 
 
