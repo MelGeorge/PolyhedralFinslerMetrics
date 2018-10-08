@@ -9,6 +9,7 @@ Given a Polyhedral Finsler Metric, write a Python script which can calculate the
 * Created functions for translating between polar/ cartesian coordinates
 * Created function for ordering a given set of points based on polar coordinates
 * Created function for plotting the shape of a polygon
+![Octagon](https://raw.githubusercontent.com/MelGeorge/PolyhedralFinslerMetrics/master/images/octagon.png)
 
 ## To do:
 * Be able to take in points for the polygon from user
