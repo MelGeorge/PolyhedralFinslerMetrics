@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pylab as p
 
 # From Stack Overflow
 def cartesian_to_polar(pair):
@@ -70,28 +71,31 @@ def plot_shape(points):
 
 # Main function
 def main():
-    
-    points = [(1, 0), (0,1), (-1, 0), (0,-1)]
+    points = [(1,0), (0,1), (-1,0), (0,-1)]
     plot_shape(points)
     polar_points = order_points(points)
     
     # input
     in_1 = (1, 0)
+    plt.plot([in_1[0]],  [in_1[1]], marker='o', markersize=10, color="y")
     in_2 = (2, 1)
-    
+    plt.plot([in_2[0]],  [in_2[1]], marker='o', markersize=10, color="b")
+    p.arrow(in_1[0],  in_1[1], in_2[0] - in_1[0] - 0.15,  in_2[1] - in_1[1] - 0.15, fc="k", ec="k", head_width=0.1, head_length=0.15)
+        
     # vec = Y-X
     vec = (in_2[0] - in_1[0], in_2[1] - in_1[1])
     vec_polar = cartesian_to_polar(vec)
     plt.plot([vec[0]],  [vec[1]], marker='o', markersize=10, color="g")
+    p.arrow(0,0, vec[0] - 0.15, vec[1] - 0.15, fc="k", ec="k", head_width=0.1, head_length=0.15)
     plt.show()
     
     lamda=0
     # extract all the angles of vertices
     res_list = [x[1] for x in polar_points]
     for idx in range(len(res_list)) :
-        if vec_polar[1] < res_list[idx]
-            A = polar_to_cartesian(ordered_points[idx-1])
-            B = polar_to_cartesian(ordered_points[idx])
+        if vec_polar[1] < res_list[idx] :
+            A = polar_to_cartesian(polar_points[idx-1])
+            B = polar_to_cartesian(polar_points[idx])
             # the crossing point
             cross = cross_point(A, B, vec)
             # this is the final lamda
@@ -103,8 +107,8 @@ def main():
     for pt in points :
         final_vtx.append((pt[0]*lamda, pt[1]*lamda))
 
-plot_shape(final_vtx)
-plt.show()
+    plot_shape(final_vtx)
+    plt.show()
 
 if __name__ == '__main__':
     main()
