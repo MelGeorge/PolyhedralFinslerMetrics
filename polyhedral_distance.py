@@ -86,6 +86,28 @@ def plot_distance_calculation(ordered_points, P, Q, distance):
     plt.axis('scaled')
     plt.show()
 
+# Input: an list of ordered points (x,y)
+# Output: true if it is convex, false otherwise
+def is_convex(ordered_points):
+    # n is the number of points
+    n = len(ordered_points)
+    
+    ordered_points.append(ordered_points[0])
+    ordered_points.append(ordered_points[1])
+    
+    for i in range(0,n):
+        p1 = ordered_points[i]
+        p2 = ordered_points[i+1]
+        p3 = ordered_points[i+2]
+        x1 = p2[0] - p1[0]
+        y1 = p2[1] - p1[1]
+        x2 = p3[0] - p2[0]
+        y2 = p3[1] - p2[1]
+        dot_product = x1*x2 + y1*y2
+        if dot_product > 0 and x1*y2 != x2*y1:
+            return False
+
+    return True
 
 # Calculate the difference between two points P, Q
 # in cartesian coordinates
@@ -154,6 +176,10 @@ def find_points(ordered_points, P):
 def calculate_distance(ordered_points, P, Q):
     # Calculate the point Q - P
     R = q_minus_p(Q, P)
+
+    # Special case -- distance is zero
+    if R == (0, 0):
+        return 0
     
     # Find the corners the polygon between which the line
     # drawn from the origin to R will intersect.
@@ -216,6 +242,8 @@ def main():
     ordered_points = order_points(points)
     
     # Check if the polygon is convex
+    # TODO : Debug is_convex function and uncomment this check
+    # It is commented out for now so the program will run in the meantime
     #convex = is_convex(ordered_points)
     convex = True
     
@@ -230,8 +258,6 @@ def main():
     # Plot the shape with the specified points
     print("Plotting the unit ball for this metric:\n")
     plot_shape(ordered_points)
-    
-
     
     # Print instructions on entering points
     print("You can now start finding distances between points in this metric. \
