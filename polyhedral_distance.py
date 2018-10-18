@@ -50,7 +50,6 @@ def order_points(points):
         ordered_points.append((point[0], point[1]))
     
     return ordered_points
-    
 
 # Plots a shape with specified points
 def plot_shape(points):
@@ -107,7 +106,8 @@ def p_times_k(P, K):
 # or vertex where the line from the origin to point
 # intersects the polygon
 # (Mark's step 2)
-def find_intersection(ordered_points, P):
+def find_points(ordered_points, P):
+    
     # Get the polar form of both the point P and the ordered_points
     P_polar = cartesian_to_polar(P)
     ordered_points_polar = []
@@ -115,94 +115,127 @@ def find_intersection(ordered_points, P):
     for point in ordered_points:
         ordered_points_polar.append(cartesian_to_polar(point))
 
-    # Find the vertex / vertices where phi coordinate is between
-    # or equal to P_polar's phi coordinate
+    greatest_negative = -np.pi
+    greatest_negative_index = 0
+    least_positive = np.pi
+    least_positive_index = 0
+
+    # Find the vertex/ vertices where phi is between or equal to P_polar's phi coordinate
     for i in range(0, len(ordered_points_polar)):
+        # Keep track of where the greatest negative phi and least positive phi are
+        if ordered_points_polar[i][1] > greatest_negative and ordered_points_polar[i][1] < 0:
+            greatest_negative = ordered_points_polar[i][1]
+            greatest_negative_index = i
+        if ordered_points_polar[i][1] < least_positive and ordered_points_polar[i][1] > 0:
+            least_positive = ordered_points_polar[i][1]
+            least_positive_index = i
+            
+        # Special cases if we're looking at the last point
         if i == len(ordered_points_polar) - 1:
-            if P_polar[1] > ordered_points_polar[i][1]:
+            # Q-P may intersect between the first and last point
+            if P_polar[1] > ordered_points_polar[i][1] or P_polar[1] < ordered_points_polar[i][1]:
                 return (ordered_points_polar[0], ordered_points_polar[i])
+            # Q-P may intersect the last point exactly
             elif P_polar[1] == ordered_points_polar[i][1]:
                 return (ordered_points_polar[i], ordered_points_polar[i])
+            # Q-P may intersect between the two points nearest to the positive x-axis
+            elif P_polar[1] < least_positive and P_polar[1] > greatest_negative:
+                return (ordered_points_polar[greatest_negative_index], ordered_points_polar[least_positive_index])
+        # Case when Q-P intersects between two points
         elif P_polar[1] > ordered_points_polar[i][1] and P_polar[1] < ordered_points_polar[i+1][1]:
-            return (ordered_points_polar[i], ordered_points_polar[i + 1])
+            return (ordered_points_polar[i],ordered_points_polar[i+1])
+        # Case when Q-P intersects a point on the polygon exactly
         elif P_polar[1] == ordered_points_polar[i][1]:
-            return (ordered_points_polar[i], ordered_points_polar[i])
+            return (ordered_points_polar[i],ordered_points_polar[i])
 
 # Function which takes in ordered set of points for 
 # the unit ball and calculates d(P, Q) using the 
 # Polyhedral Finsler Metric defined by the points
-# (Mark's step 3)
 def calculate_distance(ordered_points, P, Q):
     # Calculate the point Q - P
     R = q_minus_p(Q, P)
     
-    # Find the intersection of the polygon and a line
-    # drawn from the origin to R
-    V = find_intersection(ordered_points, R)
+    # Find the corners the polygon between which the line
+    # drawn from the origin to R will intersect.
+    # Call these points p1 and p2
+    V = find_points(ordered_points, R)
+    p1 = polar_to_cartesian(V[0])
+    p2 = polar_to_cartesian(V[1])
+
+    x = 0
+    y = 0
+
+    # Handle cases where different slopes are infinite
+    if p1[0] == p2[0] and R[0] != 0:
+        # Fit a line to the points R = (x,y) and (0,0)
+        m_r, b_r = np.polyfit([R[0], 0], [R[1], 0], 1)
+
+        # Calculate x, y
+        x = p1[0]
+        y = m_r * x + b_r
+    elif p1[0] != p2[0] and R[0] == 0:
+        # Fit a line to the points p1 and p2
+        m_v, b_v = np.polyfit([p1[0], p2[0]], [p1[1], p2[1]], 1)
+
+        # Calculate x, y
+        x = R[0]
+        y = m_v * x + b_v
+    else:
+        # Fit a line to each pair of points
+        m_v, b_v = np.polyfit([p1[0], p2[0]], [p1[1], p2[1]], 1)
+        m_r, b_r = np.polyfit([R[0], 0], [R[1], 0], 1)
+ 
+        # Calculate x, y
+        x = (b_v - b_r) / (m_r - m_v)
+        y = m_v * x + b_v
+
+    intersection = (x, y)
     
-    # Divide the polar radius of R by the polar radius
-    # of V to get the distance in this metric
-    
+    # Calculate polar radius to R=Q-P
     R_radius = cartesian_to_polar(R)[0]
     
-    if V[0] == V[1]:
-        V_radius = V[0][0]
-        return R_radius / V_radius
-    else:
-        p1 = polar_to_cartesian(V[0])
-        p2 = polar_to_cartesian(V[1])
-        
-        m = 0
-
-        if p2[0] != p1[0]:
-            m = (p2[1] - p1[1]) / (p2[0] - p1[0])
-            
-        b = p2[1] - m * p2[0]
-        
-        V_radius = 0
-        
-        if R[0] == 0:
-            point = (0, b)
-            V_radius = cartesian_to_polar(point)[0]
-        else:
-            j = R[1] / R[0]
-            if m == 0 and j == 0:
-                point = (p1[0], 0)
-                V_radius = cartesian_to_polar(point)[0]
-            else:
-                x = b / (j - m)
-                y = m * x + b
-                point = (x, y)
-                V_radius = cartesian_to_polar(point)[0]
-
-        return R_radius / V_radius
+    # Calculate polar radius to point where R intersects with the polygon
+    V_radius = cartesian_to_polar(intersection)[0]
+    
+    # Distance from P to Q is R_radius / V_radius
+    return R_radius / V_radius
 
 # Main function
 def main():
-    # Square
-    # points = [(1, -1), (-1, 1), (1, 1), (-1, -1)]
-    
-    # Octagon
-    # points = [(1, 0), (0.707106, 0.707106), (0,1), (-0.707106, 0.707106), (-1, 0), (-0.707106, -0.707106), (0, -1), (0.707106, -0.707106)]
-    
     # Take in points for the polygon that defines the metric
     points = []
     point = input("Please enter a point in the form 'x y' or 'done' to signal you're done entering points:\n")
     while point != 'done':
         points.append((float((point.split())[0]), float((point.split())[1])))
         point = input("Enter another point or enter 'done':\n")
-    
+
+    # When user is done, print points so user can confirm
     print("The points you entered are:\n", points)
-    print("Plotting the unit ball for this metric:\n")
     
     # Order points
     ordered_points = order_points(points)
     
+    # Check if the polygon is convex
+    #convex = is_convex(ordered_points)
+    convex = True
+    
+    if not convex:
+        # Warn user that points do not form a convex polygon
+        # Draw shape so user can see that it is not a convex
+        # polygon and then exit the program with an error
+        print("The entered points do not form a convex polygon. Here is the current shape:")
+        plot_shape(ordered_points)
+        raise ValueError("The entered points do not form a convex polygon. Exiting")
+        
     # Plot the shape with the specified points
+    print("Plotting the unit ball for this metric:\n")
     plot_shape(ordered_points)
     
+
+    
     # Print instructions on entering points
-    print("You can now start finding distances between points in this metric. Enter points in the form 'x y' when prompted, and type 'quit' at any time.")
+    print("You can now start finding distances between points in this metric. \
+    Enter points in the form 'x y' when prompted, and type 'quit' at any time.")
     
     # Allow user to enter several points and calculate distances between them
     P = ''
